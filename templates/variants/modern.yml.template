@@ -17,6 +17,7 @@ asterisk:
       - chan_iax2
       - chan_local
       - chan_bridge_media
+      - chan_audiosocket
     apps:
       - app_voicemail
       - app_queue
@@ -27,6 +28,7 @@ asterisk:
       - app_record
       - app_echo
       - app_mixmonitor
+      - app_audiosocket
     drivers:
       - res_musiconhold
       - res_pjsip

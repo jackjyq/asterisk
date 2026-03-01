@@ -62,6 +62,7 @@ menuselect/menuselect --enable app_playback menuselect.makeopts || warn "Module 
 menuselect/menuselect --enable app_record menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable app_record menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
 menuselect/menuselect --enable app_echo menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable app_echo menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
 menuselect/menuselect --enable app_mixmonitor menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable app_mixmonitor menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
+menuselect/menuselect --enable app_audiosocket menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable app_audiosocket menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
 
 # Enable CDR and CEL modules
 
@@ -70,6 +71,7 @@ menuselect/menuselect --enable chan_pjsip menuselect.makeopts || warn "Module no
 menuselect/menuselect --enable chan_iax2 menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable chan_iax2 menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
 menuselect/menuselect --enable chan_local menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable chan_local menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
 menuselect/menuselect --enable chan_bridge_media menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable chan_bridge_media menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
+menuselect/menuselect --enable chan_audiosocket menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable chan_audiosocket menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"
 
 # Enable resource modules
 menuselect/menuselect --enable res_musiconhold menuselect.makeopts || warn "Module not found: $(echo 'menuselect/menuselect --enable res_musiconhold menuselect.makeopts' | grep -o '[a-z_]*' | tail -1)"

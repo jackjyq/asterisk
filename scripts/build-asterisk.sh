@@ -11,8 +11,8 @@ LATEST_BUILDS_FILE="${PROJECT_DIR}/asterisk/supported-asterisk-builds.yml"
 
 # Validate path detection
 if [[ ! -d "$PROJECT_DIR" ]] || [[ ! -d "$SCRIPT_DIR" ]]; then
-    echo "ERROR: Failed to detect project paths. SCRIPT_DIR=$SCRIPT_DIR, PROJECT_DIR=$PROJECT_DIR" >&2
-    exit 1
+	echo "ERROR: Failed to detect project paths. SCRIPT_DIR=$SCRIPT_DIR, PROJECT_DIR=$PROJECT_DIR" >&2
+	exit 1
 fi
 
 # Validate project structure
@@ -20,23 +20,23 @@ required_dirs=("$PROJECT_DIR/templates" "$PROJECT_DIR/configs" "$PROJECT_DIR/lib
 required_files=("$LATEST_BUILDS_FILE")
 
 for dir in "${required_dirs[@]}"; do
-    if [[ ! -d "$dir" ]]; then
-        echo "ERROR: Required directory not found: $dir" >&2
-        echo "Make sure you're running this script from a valid Asterisk build project directory." >&2
-        exit 1
-    fi
+	if [[ ! -d "$dir" ]]; then
+		echo "ERROR: Required directory not found: $dir" >&2
+		echo "Make sure you're running this script from a valid Asterisk build project directory." >&2
+		exit 1
+	fi
 done
 
 for file in "${required_files[@]}"; do
-    if [[ ! -f "$file" ]]; then
-        echo "ERROR: Required file not found: $file" >&2
-        echo "Make sure you're running this script from a valid Asterisk build project directory." >&2
-        exit 1
-    fi
+	if [[ ! -f "$file" ]]; then
+		echo "ERROR: Required file not found: $file" >&2
+		echo "Make sure you're running this script from a valid Asterisk build project directory." >&2
+		exit 1
+	fi
 done
 
 # Default values
-DEFAULT_REGISTRY="ghcr.io/andrius/asterisk"
+DEFAULT_REGISTRY="ghcr.io/jackjyq/asterisk"
 DEFAULT_PLATFORMS="linux/amd64,linux/arm64"
 DRY_RUN=false
 PUSH_IMAGES=false
@@ -55,7 +55,7 @@ NC='\033[0m' # No Color
 
 # Function to show usage
 usage() {
-    cat << EOF
+	cat <<EOF
 Usage: $0 <version> [os] [arch] [options]
 
 Build Asterisk Docker images using YAML-based configuration system.
@@ -94,125 +94,125 @@ Matrix Resolution:
   - Custom configs in configs/ directory take precedence
 
 EOF
-    exit 0
+	exit 0
 }
 
 # Function to log messages
 log() {
-    local level="$1"
-    shift
-    case "$level" in
-        INFO)  echo -e "${BLUE}[INFO]${NC}  $*" ;;
-        WARN)  echo -e "${YELLOW}[WARN]${NC}  $*" >&2 ;;
-        ERROR) echo -e "${RED}[ERROR]${NC} $*" >&2 ;;
-        SUCCESS) echo -e "${GREEN}[SUCCESS]${NC} $*" ;;
-        DEBUG) [[ "$VERBOSE" == true ]] && echo -e "${BLUE}[DEBUG]${NC} $*" ;;
-    esac
+	local level="$1"
+	shift
+	case "$level" in
+	INFO) echo -e "${BLUE}[INFO]${NC}  $*" ;;
+	WARN) echo -e "${YELLOW}[WARN]${NC}  $*" >&2 ;;
+	ERROR) echo -e "${RED}[ERROR]${NC} $*" >&2 ;;
+	SUCCESS) echo -e "${GREEN}[SUCCESS]${NC} $*" ;;
+	DEBUG) [[ "$VERBOSE" == true ]] && echo -e "${BLUE}[DEBUG]${NC} $*" ;;
+	esac
 }
 
 # Function to validate Asterisk version format
 validate_version() {
-    local version="$1"
+	local version="$1"
 
-    # Allow git versions (git-XXXXXX), "git" keyword, and regular versions
-    if [[ "$version" == "git" ]]; then
-        # Special git keyword from YAML matrix
-        return 0
-    elif [[ "$version" =~ ^git-[a-fA-F0-9]+$ ]]; then
-        # Git version format: git-<sha>
-        return 0
-    elif [[ "$version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(\.[0-9]+)?(-[a-zA-Z0-9]+)?$ ]]; then
-        # Regular version format: major.minor[.patch][.subpatch][-suffix]
-        return 0
-    else
-        log ERROR "Invalid version format: $version"
-        log ERROR "Expected format: major.minor[.patch][.subpatch][-suffix] (e.g., 22.5.2, 23.0.0-rc1), git-<sha> (e.g., git-ff80666), or 'git'"
-        return 1
-    fi
+	# Allow git versions (git-XXXXXX), "git" keyword, and regular versions
+	if [[ "$version" == "git" ]]; then
+		# Special git keyword from YAML matrix
+		return 0
+	elif [[ "$version" =~ ^git-[a-fA-F0-9]+$ ]]; then
+		# Git version format: git-<sha>
+		return 0
+	elif [[ "$version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(\.[0-9]+)?(-[a-zA-Z0-9]+)?$ ]]; then
+		# Regular version format: major.minor[.patch][.subpatch][-suffix]
+		return 0
+	else
+		log ERROR "Invalid version format: $version"
+		log ERROR "Expected format: major.minor[.patch][.subpatch][-suffix] (e.g., 22.5.2, 23.0.0-rc1), git-<sha> (e.g., git-ff80666), or 'git'"
+		return 1
+	fi
 }
 
 # Function to check prerequisites
 check_prerequisites() {
-    log INFO "Checking prerequisites..."
+	log INFO "Checking prerequisites..."
 
-    # Check Docker
-    if ! command -v docker >/dev/null 2>&1; then
-        log ERROR "Docker is not installed or not in PATH"
-        return 1
-    fi
+	# Check Docker
+	if ! command -v docker >/dev/null 2>&1; then
+		log ERROR "Docker is not installed or not in PATH"
+		return 1
+	fi
 
-    # Check Docker buildx
-    if ! docker buildx version >/dev/null 2>&1; then
-        log ERROR "Docker buildx is not available"
-        return 1
-    fi
+	# Check Docker buildx
+	if ! docker buildx version >/dev/null 2>&1; then
+		log ERROR "Docker buildx is not available"
+		return 1
+	fi
 
-    # Check if Docker daemon is running
-    if ! docker info >/dev/null 2>&1; then
-        log ERROR "Docker daemon is not running"
-        return 1
-    fi
+	# Check if Docker daemon is running
+	if ! docker info >/dev/null 2>&1; then
+		log ERROR "Docker daemon is not running"
+		return 1
+	fi
 
-    # Check Python for YAML parsing and generation
-    if ! command -v python3 >/dev/null 2>&1; then
-        log ERROR "Python 3 is not installed or not in PATH"
-        return 1
-    fi
+	# Check Python for YAML parsing and generation
+	if ! command -v python3 >/dev/null 2>&1; then
+		log ERROR "Python 3 is not installed or not in PATH"
+		return 1
+	fi
 
-    # Note: Using Python for YAML parsing (no need for yq)
+	# Note: Using Python for YAML parsing (no need for yq)
 
-    log SUCCESS "Prerequisites check passed"
-    return 0
+	log SUCCESS "Prerequisites check passed"
+	return 0
 }
 
 # Parse command line arguments
 POSITIONAL_ARGS=()
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --help|-h)
-            usage
-            ;;
-        --push)
-            PUSH_IMAGES=true
-            shift
-            ;;
-        --registry)
-            DEFAULT_REGISTRY="$2"
-            shift 2
-            ;;
-        --platforms)
-            DEFAULT_PLATFORMS="$2"
-            shift 2
-            ;;
-        --dry-run)
-            DRY_RUN=true
-            shift
-            ;;
-        --force-config)
-            FORCE_CONFIG=true
-            shift
-            ;;
-        --parallel)
-            PARALLEL_BUILDS=true
-            shift
-            ;;
-        --skip-format-dockerfile)
-            SKIP_FORMAT_DOCKERFILE=true
-            shift
-            ;;
-        --verbose)
-            VERBOSE=true
-            shift
-            ;;
-        --git)
-            GIT_BUILD=true
-            shift
-            ;;
-        *)
-            POSITIONAL_ARGS+=("$1")
-            shift
-            ;;
-    esac
+	case $1 in
+	--help | -h)
+		usage
+		;;
+	--push)
+		PUSH_IMAGES=true
+		shift
+		;;
+	--registry)
+		DEFAULT_REGISTRY="$2"
+		shift 2
+		;;
+	--platforms)
+		DEFAULT_PLATFORMS="$2"
+		shift 2
+		;;
+	--dry-run)
+		DRY_RUN=true
+		shift
+		;;
+	--force-config)
+		FORCE_CONFIG=true
+		shift
+		;;
+	--parallel)
+		PARALLEL_BUILDS=true
+		shift
+		;;
+	--skip-format-dockerfile)
+		SKIP_FORMAT_DOCKERFILE=true
+		shift
+		;;
+	--verbose)
+		VERBOSE=true
+		shift
+		;;
+	--git)
+		GIT_BUILD=true
+		shift
+		;;
+	*)
+		POSITIONAL_ARGS+=("$1")
+		shift
+		;;
+	esac
 done
 
 # Restore positional parameters
@@ -220,49 +220,49 @@ set -- "${POSITIONAL_ARGS[@]}"
 
 # Handle git builds differently
 if [[ "$GIT_BUILD" == true ]]; then
-    # For git builds, first arg is distribution, second is arch
-    DISTRIBUTION="${1:-trixie}"
-    ARCH_FILTER="${2:-amd64}"
+	# For git builds, first arg is distribution, second is arch
+	DISTRIBUTION="${1:-trixie}"
+	ARCH_FILTER="${2:-amd64}"
 
-    # Get git SHA from repository
-    if ! command -v git >/dev/null 2>&1; then
-        log ERROR "Git is required for --git builds but not found in PATH"
-        exit 1
-    fi
+	# Get git SHA from repository
+	if ! command -v git >/dev/null 2>&1; then
+		log ERROR "Git is required for --git builds but not found in PATH"
+		exit 1
+	fi
 
-    log INFO "Fetching latest git SHA from Asterisk repository..."
-    GIT_SHA=$(git ls-remote https://github.com/asterisk/asterisk.git HEAD | cut -f1 | cut -c1-7)
-    if [[ -z "$GIT_SHA" ]]; then
-        log ERROR "Failed to fetch git SHA from Asterisk repository"
-        exit 1
-    fi
+	log INFO "Fetching latest git SHA from Asterisk repository..."
+	GIT_SHA=$(git ls-remote https://github.com/asterisk/asterisk.git HEAD | cut -f1 | cut -c1-7)
+	if [[ -z "$GIT_SHA" ]]; then
+		log ERROR "Failed to fetch git SHA from Asterisk repository"
+		exit 1
+	fi
 
-    VERSION="git-$GIT_SHA"
-    OS_FILTER="debian"
+	VERSION="git-$GIT_SHA"
+	OS_FILTER="debian"
 
-    log INFO "Building git version: $VERSION (SHA: $GIT_SHA)"
-    log INFO "Distribution: $DISTRIBUTION"
-    log INFO "Architecture: $ARCH_FILTER"
+	log INFO "Building git version: $VERSION (SHA: $GIT_SHA)"
+	log INFO "Distribution: $DISTRIBUTION"
+	log INFO "Architecture: $ARCH_FILTER"
 else
-    # Validate arguments for release builds
-    if [[ $# -lt 1 ]]; then
-        log ERROR "Version argument is required"
-        usage
-    fi
+	# Validate arguments for release builds
+	if [[ $# -lt 1 ]]; then
+		log ERROR "Version argument is required"
+		usage
+	fi
 
-    VERSION="$1"
-    OS_FILTER="${2:-}"
-    ARCH_FILTER="${3:-}"
+	VERSION="$1"
+	OS_FILTER="${2:-}"
+	ARCH_FILTER="${3:-}"
 
-    # Validate version
-    if ! validate_version "$VERSION"; then
-        exit 1
-    fi
+	# Validate version
+	if ! validate_version "$VERSION"; then
+		exit 1
+	fi
 fi
 
 # Check prerequisites
 if ! check_prerequisites; then
-    exit 1
+	exit 1
 fi
 
 log INFO "Starting Asterisk build for version: $VERSION"
@@ -272,19 +272,19 @@ log INFO "Starting Asterisk build for version: $VERSION"
 
 # Function to extract OS/architecture matrix for a version using Python
 get_build_matrix() {
-    local version="$1"
-    local os_filter="$2"
-    local arch_filter="$3"
+	local version="$1"
+	local os_filter="$2"
+	local arch_filter="$3"
 
-    log INFO "Resolving build matrix for version $version..."
+	log INFO "Resolving build matrix for version $version..."
 
-    if [[ ! -f "$LATEST_BUILDS_FILE" ]]; then
-        log ERROR "YAML file not found: $LATEST_BUILDS_FILE"
-        return 1
-    fi
+	if [[ ! -f "$LATEST_BUILDS_FILE" ]]; then
+		log ERROR "YAML file not found: $LATEST_BUILDS_FILE"
+		return 1
+	fi
 
-    # Use Python to parse YAML and generate build matrix
-    python3 << EOF
+	# Use Python to parse YAML and generate build matrix
+	python3 <<EOF
 import yaml
 import sys
 import os
@@ -416,20 +416,20 @@ EOF
 
 # Function to determine template type - only modern Debian versions supported
 get_template_type() {
-    local version="$1"
+	local version="$1"
 
-    # Extract major version number
-    local major_version
-    major_version=$(echo "$version" | cut -d'.' -f1)
+	# Extract major version number
+	local major_version
+	major_version=$(echo "$version" | cut -d'.' -f1)
 
-    # Only modern Asterisk versions (11+) are supported
-    if [[ "$major_version" -lt 11 ]]; then
-        echo "ERROR: Legacy versions ($version) not supported. Use only Asterisk 11+ versions." >&2
-        return 1
-    fi
+	# Only modern Asterisk versions (11+) are supported
+	if [[ "$major_version" -lt 11 ]]; then
+		echo "ERROR: Legacy versions ($version) not supported. Use only Asterisk 11+ versions." >&2
+		return 1
+	fi
 
-    # Only Debian builds supported
-    echo "debian"
+	# Only Debian builds supported
+	echo "debian"
 }
 
 # Main build processing
@@ -440,86 +440,86 @@ export VERBOSE="$VERBOSE"
 
 # Handle git builds with special matrix
 if [[ "$GIT_BUILD" == true ]]; then
-    log INFO "Creating git build matrix..."
-    # For git builds, create a simple build target
-    BUILD_TARGETS=("debian:$DISTRIBUTION:$ARCH_FILTER:git-dev:git:")
-    log INFO "Git build target: debian:$DISTRIBUTION:$ARCH_FILTER:git-dev:git:"
+	log INFO "Creating git build matrix..."
+	# For git builds, create a simple build target
+	BUILD_TARGETS=("debian:$DISTRIBUTION:$ARCH_FILTER:git-dev:git:")
+	log INFO "Git build target: debian:$DISTRIBUTION:$ARCH_FILTER:git-dev:git:"
 else
-    # Get build matrix and capture it properly
-    {
-        exec 3< <(get_build_matrix "$VERSION" "$OS_FILTER" "$ARCH_FILTER" 2>&1)
-        BUILD_TARGETS=()
-        while IFS= read -r line <&3; do
-            # Only capture lines that look like build targets (contain colons)
-            # Format: os:distribution:architectures:template:source:additional_tags (6 fields, 5 colons)
-            if [[ "$line" =~ ^[^:]+:[^:]+:[^:]+:[^:]*:[^:]+:[^:]*$ ]]; then
-                BUILD_TARGETS+=("$line")
-            fi
-        done
-        exec 3<&-
-    } 2>&1
+	# Get build matrix and capture it properly
+	{
+		exec 3< <(get_build_matrix "$VERSION" "$OS_FILTER" "$ARCH_FILTER" 2>&1)
+		BUILD_TARGETS=()
+		while IFS= read -r line <&3; do
+			# Only capture lines that look like build targets (contain colons)
+			# Format: os:distribution:architectures:template:source:additional_tags (6 fields, 5 colons)
+			if [[ "$line" =~ ^[^:]+:[^:]+:[^:]+:[^:]*:[^:]+:[^:]*$ ]]; then
+				BUILD_TARGETS+=("$line")
+			fi
+		done
+		exec 3<&-
+	} 2>&1
 fi
 
 if [[ ${#BUILD_TARGETS[@]} -eq 0 ]]; then
-    log ERROR "No build targets found"
-    exit 1
+	log ERROR "No build targets found"
+	exit 1
 fi
 
 # Display build targets
 log INFO "Build targets:"
 for target in "${BUILD_TARGETS[@]}"; do
-    IFS=':' read -r os distribution architectures template source additional_tags <<< "$target"
-    template_info=""
-    if [[ -n "$template" ]]; then
-        template_info=" [template: $template]"
-    fi
-    tags_info=""
-    if [[ -n "$additional_tags" ]]; then
-        tags_info=" [additional_tags: $additional_tags]"
-    fi
-    log INFO "  → $os/$distribution ($architectures)$template_info$tags_info [from: $source]"
+	IFS=':' read -r os distribution architectures template source additional_tags <<<"$target"
+	template_info=""
+	if [[ -n "$template" ]]; then
+		template_info=" [template: $template]"
+	fi
+	tags_info=""
+	if [[ -n "$additional_tags" ]]; then
+		tags_info=" [additional_tags: $additional_tags]"
+	fi
+	log INFO "  → $os/$distribution ($architectures)$template_info$tags_info [from: $source]"
 done
 
 # Function to ensure generated config exists
 ensure_config() {
-    local version="$1"
-    local os="$2"
-    local distribution="$3"
-    local template="$4"  # Optional template name
+	local version="$1"
+	local os="$2"
+	local distribution="$3"
+	local template="$4" # Optional template name
 
-    # Handle git builds with special config generation
-    if [[ "$GIT_BUILD" == true ]] || [[ "$template" == "git-dev" ]]; then
-        # For git builds, use consistent git-master-{distribution} config name
-        local generated_config="${PROJECT_DIR}/configs/generated/asterisk-git-master-${distribution}.yml"
-        local GIT_SHA=""
+	# Handle git builds with special config generation
+	if [[ "$GIT_BUILD" == true ]] || [[ "$template" == "git-dev" ]]; then
+		# For git builds, use consistent git-master-{distribution} config name
+		local generated_config="${PROJECT_DIR}/configs/generated/asterisk-git-master-${distribution}.yml"
+		local GIT_SHA=""
 
-        log DEBUG "Creating git build config: $generated_config" >&2
+		log DEBUG "Creating git build config: $generated_config" >&2
 
-        # Get git SHA - either from previous fetch or YAML metadata
-        if [[ -z "$GIT_SHA" ]]; then
-            # If not already set, get from YAML metadata or fetch from repo
-            if [[ "$version" == "git" ]]; then
-                log INFO "Fetching git SHA from YAML metadata for unified git build..." >&2
-                GIT_SHA=$(grep "git_sha:" "$LATEST_BUILDS_FILE" | sed 's/.*git_sha: *"\?\([^"]*\)"\?.*/\1/' | head -1)
-                if [[ -z "$GIT_SHA" || "$GIT_SHA" == "unknown" ]]; then
-                    log INFO "Git SHA not available in YAML, fetching from repository..." >&2
-                    GIT_SHA=$(git ls-remote https://github.com/asterisk/asterisk.git HEAD | cut -f1 | cut -c1-7)
-                    if [[ -z "$GIT_SHA" ]]; then
-                        log ERROR "Failed to fetch git SHA from Asterisk repository"
-                        return 1
-                    fi
-                fi
-            fi
-        fi
+		# Get git SHA - either from previous fetch or YAML metadata
+		if [[ -z "$GIT_SHA" ]]; then
+			# If not already set, get from YAML metadata or fetch from repo
+			if [[ "$version" == "git" ]]; then
+				log INFO "Fetching git SHA from YAML metadata for unified git build..." >&2
+				GIT_SHA=$(grep "git_sha:" "$LATEST_BUILDS_FILE" | sed 's/.*git_sha: *"\?\([^"]*\)"\?.*/\1/' | head -1)
+				if [[ -z "$GIT_SHA" || "$GIT_SHA" == "unknown" ]]; then
+					log INFO "Git SHA not available in YAML, fetching from repository..." >&2
+					GIT_SHA=$(git ls-remote https://github.com/asterisk/asterisk.git HEAD | cut -f1 | cut -c1-7)
+					if [[ -z "$GIT_SHA" ]]; then
+						log ERROR "Failed to fetch git SHA from Asterisk repository"
+						return 1
+					fi
+				fi
+			fi
+		fi
 
-        # Always regenerate git configs to get latest git SHA
-        log INFO "Generating git config for $version ($os/$distribution) with SHA: $GIT_SHA" >&2
+		# Always regenerate git configs to get latest git SHA
+		log INFO "Generating git config for $version ($os/$distribution) with SHA: $GIT_SHA" >&2
 
-        # Ensure configs/generated directory exists
-        mkdir -p "${PROJECT_DIR}/configs/generated"
+		# Ensure configs/generated directory exists
+		mkdir -p "${PROJECT_DIR}/configs/generated"
 
-        # Generate git config using DRYTemplateGenerator for proper version overrides
-        if ! python3 -c "
+		# Generate git config using DRYTemplateGenerator for proper version overrides
+		if ! python3 -c "
 import sys
 import os
 sys.path.insert(0, os.path.join('${PROJECT_DIR}', 'lib'))
@@ -542,101 +542,101 @@ generator.save_config(config, '${generated_config}')
 
 print('Git config generated successfully')
 " >&2; then
-            log ERROR "Failed to generate git config from template" >&2
-            return 1
-        fi
+			log ERROR "Failed to generate git config from template" >&2
+			return 1
+		fi
 
-        if [[ ! -f "$generated_config" ]]; then
-            log ERROR "Git config generation failed: $generated_config" >&2
-            return 1
-        fi
+		if [[ ! -f "$generated_config" ]]; then
+			log ERROR "Git config generation failed: $generated_config" >&2
+			return 1
+		fi
 
-        log SUCCESS "Generated git config: $generated_config" >&2
+		log SUCCESS "Generated git config: $generated_config" >&2
 
-        # Also create a symlink with workflow-expected naming for compatibility
-        local workflow_config="${PROJECT_DIR}/configs/generated/asterisk-${version}-${distribution}.yml"
-        if [[ "$generated_config" != "$workflow_config" ]]; then
-            ln -sf "$(basename "$generated_config")" "$workflow_config" 2>/dev/null || {
-                log DEBUG "Could not create symlink, copying config file instead" >&2
-                cp "$generated_config" "$workflow_config"
-            }
-            log DEBUG "Created workflow-compatible config: $workflow_config" >&2
-        fi
+		# Also create a symlink with workflow-expected naming for compatibility
+		local workflow_config="${PROJECT_DIR}/configs/generated/asterisk-${version}-${distribution}.yml"
+		if [[ "$generated_config" != "$workflow_config" ]]; then
+			ln -sf "$(basename "$generated_config")" "$workflow_config" 2>/dev/null || {
+				log DEBUG "Could not create symlink, copying config file instead" >&2
+				cp "$generated_config" "$workflow_config"
+			}
+			log DEBUG "Created workflow-compatible config: $workflow_config" >&2
+		fi
 
-        echo "$generated_config"
-        return 0
-    fi
+		echo "$generated_config"
+		return 0
+	fi
 
-    # Only use modern generated config format (using actual naming pattern)
-    # For git builds, use consistent git-master-{distribution} config name
-    if [[ "$version" =~ ^git- ]]; then
-        local generated_config="${PROJECT_DIR}/configs/generated/asterisk-git-master-${distribution}.yml"
-    else
-        local generated_config="${PROJECT_DIR}/configs/generated/asterisk-${version}-${distribution}.yml"
-    fi
+	# Only use modern generated config format (using actual naming pattern)
+	# For git builds, use consistent git-master-{distribution} config name
+	if [[ "$version" =~ ^git- ]]; then
+		local generated_config="${PROJECT_DIR}/configs/generated/asterisk-git-master-${distribution}.yml"
+	else
+		local generated_config="${PROJECT_DIR}/configs/generated/asterisk-${version}-${distribution}.yml"
+	fi
 
-    log DEBUG "Checking for generated config: $generated_config" >&2
+	log DEBUG "Checking for generated config: $generated_config" >&2
 
-    # Use existing generated config if available and not forcing regeneration
-    if [[ -f "$generated_config" && "$FORCE_CONFIG" == false ]]; then
-        log DEBUG "Using existing generated config: $generated_config" >&2
-        echo "$generated_config"
-        return 0
-    fi
+	# Use existing generated config if available and not forcing regeneration
+	if [[ -f "$generated_config" && "$FORCE_CONFIG" == false ]]; then
+		log DEBUG "Using existing generated config: $generated_config" >&2
+		echo "$generated_config"
+		return 0
+	fi
 
-    # Generate new config using the proper config generator
-    log INFO "Generating config for $version ($os/$distribution)" >&2
+	# Generate new config using the proper config generator
+	log INFO "Generating config for $version ($os/$distribution)" >&2
 
-    # Ensure configs/generated directory exists
-    mkdir -p "${PROJECT_DIR}/configs/generated"
+	# Ensure configs/generated directory exists
+	mkdir -p "${PROJECT_DIR}/configs/generated"
 
-    # Generate config using the reusable config generation script
-    log INFO "Generating config for $version ($os/$distribution)" >&2
+	# Generate config using the reusable config generation script
+	log INFO "Generating config for $version ($os/$distribution)" >&2
 
-    # Prepare arguments for config generation script
-    local gen_args=("--versions" "$version")
-    [[ "$FORCE_CONFIG" == true ]] && gen_args+=("--force")
-    [[ "$VERBOSE" == true ]] && gen_args+=("--verbose")
+	# Prepare arguments for config generation script
+	local gen_args=("--versions" "$version")
+	[[ "$FORCE_CONFIG" == true ]] && gen_args+=("--force")
+	[[ "$VERBOSE" == true ]] && gen_args+=("--verbose")
 
-    # Export environment variables for the script
-    export PROJECT_DIR SCRIPT_DIR FORCE VERBOSE
+	# Export environment variables for the script
+	export PROJECT_DIR SCRIPT_DIR FORCE VERBOSE
 
-    if ! "${SCRIPT_DIR}/generate-configs-from-yaml.sh" "${gen_args[@]}" >&2; then
-        log ERROR "Failed to generate config from template" >&2
-        return 1
-    fi
+	if ! "${SCRIPT_DIR}/generate-configs-from-yaml.sh" "${gen_args[@]}" >&2; then
+		log ERROR "Failed to generate config from template" >&2
+		return 1
+	fi
 
-    if [[ ! -f "$generated_config" ]]; then
-        log ERROR "Config generation succeeded but file not found: $generated_config" >&2
-        return 1
-    fi
+	if [[ ! -f "$generated_config" ]]; then
+		log ERROR "Config generation succeeded but file not found: $generated_config" >&2
+		return 1
+	fi
 
-    log SUCCESS "Generated config: $generated_config" >&2
-    echo "$generated_config"
-    return 0
+	log SUCCESS "Generated config: $generated_config" >&2
+	echo "$generated_config"
+	return 0
 }
 
 # Function to generate healthcheck.sh from template
 generate_healthcheck() {
-    local config_file="$1"
-    local version="$2"
-    local output_path="$3"
+	local config_file="$1"
+	local version="$2"
+	local output_path="$3"
 
-    log DEBUG "Generating healthcheck.sh from template using config: $config_file"
+	log DEBUG "Generating healthcheck.sh from template using config: $config_file"
 
-    # Try to use yq if available, otherwise fall back to Python
-    if command -v yq >/dev/null 2>&1; then
-        log DEBUG "Using yq for YAML processing"
+	# Try to use yq if available, otherwise fall back to Python
+	if command -v yq >/dev/null 2>&1; then
+		log DEBUG "Using yq for YAML processing"
 
-        # Extract version from config using yq (get the root-level version field)
-        local config_version
-        config_version=$(yq eval '.version' "$config_file" 2>/dev/null)
+		# Extract version from config using yq (get the root-level version field)
+		local config_version
+		config_version=$(yq eval '.version' "$config_file" 2>/dev/null)
 
-        # Check if yq extraction was successful and returned a valid version
-        if [[ $? -ne 0 ]] || [[ -z "$config_version" ]] || [[ "$config_version" == "null" ]]; then
-            log DEBUG "yq extraction failed or returned invalid version ('$config_version'), falling back to Python"
-            # Fall back to Python approach
-            if ! python3 -c "
+		# Check if yq extraction was successful and returned a valid version
+		if [[ $? -ne 0 ]] || [[ -z "$config_version" ]] || [[ "$config_version" == "null" ]]; then
+			log DEBUG "yq extraction failed or returned invalid version ('$config_version'), falling back to Python"
+			# Fall back to Python approach
+			if ! python3 -c "
 import sys, yaml, os
 from pathlib import Path
 sys.path.append('${PROJECT_DIR}/lib')
@@ -658,23 +658,23 @@ content = template.render(config=config, version='$version')
 with open('$output_path', 'w') as f:
     f.write(content)
             "; then
-                log ERROR "Failed to generate healthcheck.sh using Python fallback"
-                return 1
-            fi
-        else
-            log DEBUG "Extracted version using yq: $config_version"
-            # Use sed for simple template substitution
-            if ! sed "s/{{ config\.version }}/${config_version}/g" "${PROJECT_DIR}/templates/partials/healthcheck.sh.j2" > "$output_path"; then
-                log ERROR "Failed to generate healthcheck.sh using sed"
-                return 1
-            fi
-        fi
+				log ERROR "Failed to generate healthcheck.sh using Python fallback"
+				return 1
+			fi
+		else
+			log DEBUG "Extracted version using yq: $config_version"
+			# Use sed for simple template substitution
+			if ! sed "s/{{ config\.version }}/${config_version}/g" "${PROJECT_DIR}/templates/partials/healthcheck.sh.j2" >"$output_path"; then
+				log ERROR "Failed to generate healthcheck.sh using sed"
+				return 1
+			fi
+		fi
 
-    else
-        log DEBUG "yq not available, using Python fallback"
+	else
+		log DEBUG "yq not available, using Python fallback"
 
-        # Python fallback with compatibility layer
-        if ! python3 -c "
+		# Python fallback with compatibility layer
+		if ! python3 -c "
 import sys, yaml, os
 from pathlib import Path
 sys.path.append('${PROJECT_DIR}/lib')
@@ -772,223 +772,223 @@ exec asterisk -rx \"core show uptime\" > /dev/null
     with open('$output_path', 'w') as f:
         f.write(content)
         "; then
-            log ERROR "Failed to generate healthcheck.sh using Python"
-            return 1
-        fi
-    fi
+			log ERROR "Failed to generate healthcheck.sh using Python"
+			return 1
+		fi
+	fi
 
-    # Make executable
-    if ! chmod +x "$output_path"; then
-        log ERROR "Failed to make healthcheck.sh executable"
-        return 1
-    fi
+	# Make executable
+	if ! chmod +x "$output_path"; then
+		log ERROR "Failed to make healthcheck.sh executable"
+		return 1
+	fi
 
-    if [[ ! -f "$output_path" ]]; then
-        log ERROR "healthcheck.sh was not created: $output_path"
-        return 1
-    fi
+	if [[ ! -f "$output_path" ]]; then
+		log ERROR "healthcheck.sh was not created: $output_path"
+		return 1
+	fi
 
-    log DEBUG "Generated healthcheck.sh successfully: $output_path"
-    return 0
+	log DEBUG "Generated healthcheck.sh successfully: $output_path"
+	return 0
 }
 
 # Function to generate Dockerfile and healthcheck.sh in version-specific directory
 generate_dockerfile() {
-    local config_file="$1"
-    local version="$2"
-    local os="$3"
-    local distribution="$4"
+	local config_file="$1"
+	local version="$2"
+	local os="$3"
+	local distribution="$4"
 
-    # Create version-specific directory
-    # For git builds, use consistent git-master-{distribution} directory
-    if [[ "$version" =~ ^git- ]]; then
-        local version_tag="git-master-${distribution}"
-    else
-        local version_tag="${version}-${distribution}"
-    fi
-    local build_dir="${PROJECT_DIR}/asterisk/${version_tag}"
-    local dockerfile_path="${build_dir}/Dockerfile"
-    local healthcheck_path="${build_dir}/healthcheck.sh"
+	# Create version-specific directory
+	# For git builds, use consistent git-master-{distribution} directory
+	if [[ "$version" =~ ^git- ]]; then
+		local version_tag="git-master-${distribution}"
+	else
+		local version_tag="${version}-${distribution}"
+	fi
+	local build_dir="${PROJECT_DIR}/asterisk/${version_tag}"
+	local dockerfile_path="${build_dir}/Dockerfile"
+	local healthcheck_path="${build_dir}/healthcheck.sh"
 
-    log INFO "Creating build directory: asterisk/${version_tag}" >&2
-    if ! mkdir -p "$build_dir"; then
-        log ERROR "Failed to create build directory: $build_dir" >&2
-        return 1
-    fi
+	log INFO "Creating build directory: asterisk/${version_tag}" >&2
+	if ! mkdir -p "$build_dir"; then
+		log ERROR "Failed to create build directory: $build_dir" >&2
+		return 1
+	fi
 
-    log INFO "Generating Dockerfile and healthcheck.sh for: $version_tag" >&2
+	log INFO "Generating Dockerfile and healthcheck.sh for: $version_tag" >&2
 
-    # Generate Dockerfile (without extension)
-    local dockerfile_args=("$config_file" --output "$dockerfile_path" --templates-dir "${PROJECT_DIR}/templates/dockerfile")
-    if [[ "$SKIP_FORMAT_DOCKERFILE" == true ]]; then
-        dockerfile_args+=(--skip-format-dockerfile)
-    fi
+	# Generate Dockerfile (without extension)
+	local dockerfile_args=("$config_file" --output "$dockerfile_path" --templates-dir "${PROJECT_DIR}/templates/dockerfile")
+	if [[ "$SKIP_FORMAT_DOCKERFILE" == true ]]; then
+		dockerfile_args+=(--skip-format-dockerfile)
+	fi
 
-    log DEBUG "Running: python3 ${SCRIPT_DIR}/generate-dockerfile.py ${dockerfile_args[*]}" >&2
-    if ! python3 "${SCRIPT_DIR}/generate-dockerfile.py" "${dockerfile_args[@]}" >&2; then
-        log ERROR "Failed to generate Dockerfile from $config_file" >&2
-        return 1
-    fi
+	log DEBUG "Running: python3 ${SCRIPT_DIR}/generate-dockerfile.py ${dockerfile_args[*]}" >&2
+	if ! python3 "${SCRIPT_DIR}/generate-dockerfile.py" "${dockerfile_args[@]}" >&2; then
+		log ERROR "Failed to generate Dockerfile from $config_file" >&2
+		return 1
+	fi
 
-    if [[ ! -f "$dockerfile_path" ]]; then
-        log ERROR "Dockerfile was not created: $dockerfile_path" >&2
-        return 1
-    fi
+	if [[ ! -f "$dockerfile_path" ]]; then
+		log ERROR "Dockerfile was not created: $dockerfile_path" >&2
+		return 1
+	fi
 
-    # Generate build.sh from template
-    local buildsh_path="${build_dir}/build.sh"
-    log DEBUG "Generating build.sh script for: $version_tag" >&2
-    if ! python3 -c "
+	# Generate build.sh from template
+	local buildsh_path="${build_dir}/build.sh"
+	log DEBUG "Generating build.sh script for: $version_tag" >&2
+	if ! python3 -c "
 import sys
 sys.path.insert(0, '${PROJECT_DIR}/lib')
 from dockerfile_generator import DockerfileGenerator
 generator = DockerfileGenerator('${PROJECT_DIR}/templates')
 generator.generate_build_script('$config_file', '$buildsh_path')
 " 2>&1; then
-        log ERROR "Failed to generate build.sh from $config_file" >&2
-        return 1
-    fi
+		log ERROR "Failed to generate build.sh from $config_file" >&2
+		return 1
+	fi
 
-    if [[ ! -f "$buildsh_path" ]]; then
-        log ERROR "build.sh was not created: $buildsh_path" >&2
-        return 1
-    fi
+	if [[ ! -f "$buildsh_path" ]]; then
+		log ERROR "build.sh was not created: $buildsh_path" >&2
+		return 1
+	fi
 
-    # Generate healthcheck.sh from template
-    if ! generate_healthcheck "$config_file" "$version" "$healthcheck_path" >&2; then
-        return 1
-    fi
+	# Generate healthcheck.sh from template
+	if ! generate_healthcheck "$config_file" "$version" "$healthcheck_path" >&2; then
+		return 1
+	fi
 
-    log SUCCESS "Generated Dockerfile, build.sh, and healthcheck.sh in: asterisk/${version_tag}/" >&2
-    echo "$build_dir"
-    return 0
+	log SUCCESS "Generated Dockerfile, build.sh, and healthcheck.sh in: asterisk/${version_tag}/" >&2
+	echo "$build_dir"
+	return 0
 }
 
 # Function to build Docker image (multi-architecture)
 build_image() {
-    local build_dir="$1"
-    local version="$2"
-    local os="$3"
-    local distribution="$4"
-    local architectures="$5"  # Now comma-separated list: "amd64,arm64"
-    local additional_tags="$6"  # Comma-separated list of additional tags
+	local build_dir="$1"
+	local version="$2"
+	local os="$3"
+	local distribution="$4"
+	local architectures="$5"   # Now comma-separated list: "amd64,arm64"
+	local additional_tags="$6" # Comma-separated list of additional tags
 
-    # Generate primary image tag (no arch-specific tags for multi-arch manifests)
-    local primary_tag="${version}_${os}-${distribution}"
+	# Generate primary image tag (no arch-specific tags for multi-arch manifests)
+	local primary_tag="${version}_${os}-${distribution}"
 
-    if [[ -n "$DEFAULT_REGISTRY" ]]; then
-        primary_tag="${DEFAULT_REGISTRY}:${primary_tag}"
-    fi
+	if [[ -n "$DEFAULT_REGISTRY" ]]; then
+		primary_tag="${DEFAULT_REGISTRY}:${primary_tag}"
+	fi
 
-    # Convert architecture list to Docker platforms format
-    local platforms=""
-    IFS=',' read -ra arch_array <<< "$architectures"
-    for arch in "${arch_array[@]}"; do
-        if [[ -n "$platforms" ]]; then
-            platforms="${platforms},linux/${arch}"
-        else
-            platforms="linux/${arch}"
-        fi
-    done
+	# Convert architecture list to Docker platforms format
+	local platforms=""
+	IFS=',' read -ra arch_array <<<"$architectures"
+	for arch in "${arch_array[@]}"; do
+		if [[ -n "$platforms" ]]; then
+			platforms="${platforms},linux/${arch}"
+		else
+			platforms="linux/${arch}"
+		fi
+	done
 
-    local build_args=()
-    build_args+=("--file" "$build_dir/Dockerfile")  # Absolute path to Dockerfile
-    build_args+=("--platform" "$platforms")         # Multi-platform support
-    build_args+=("--tag" "$primary_tag")
+	local build_args=()
+	build_args+=("--file" "$build_dir/Dockerfile") # Absolute path to Dockerfile
+	build_args+=("--platform" "$platforms")        # Multi-platform support
+	build_args+=("--tag" "$primary_tag")
 
-    # Add additional tags if specified
-    if [[ -n "$additional_tags" ]]; then
-        log DEBUG "Processing additional tags: $additional_tags"
-        IFS=',' read -ra tags_array <<< "$additional_tags"
-        for tag in "${tags_array[@]}"; do
-            # Trim whitespace
-            tag=$(echo "$tag" | xargs)
-            if [[ -n "$tag" ]]; then
-                if [[ -n "$DEFAULT_REGISTRY" ]]; then
-                    full_tag="${DEFAULT_REGISTRY}:${tag}"
-                else
-                    full_tag="$tag"
-                fi
-                build_args+=("--tag" "$full_tag")
-                log DEBUG "Added additional tag: $full_tag"
-            fi
-        done
-    fi
+	# Add additional tags if specified
+	if [[ -n "$additional_tags" ]]; then
+		log DEBUG "Processing additional tags: $additional_tags"
+		IFS=',' read -ra tags_array <<<"$additional_tags"
+		for tag in "${tags_array[@]}"; do
+			# Trim whitespace
+			tag=$(echo "$tag" | xargs)
+			if [[ -n "$tag" ]]; then
+				if [[ -n "$DEFAULT_REGISTRY" ]]; then
+					full_tag="${DEFAULT_REGISTRY}:${tag}"
+				else
+					full_tag="$tag"
+				fi
+				build_args+=("--tag" "$full_tag")
+				log DEBUG "Added additional tag: $full_tag"
+			fi
+		done
+	fi
 
-    if [[ "$PUSH_IMAGES" == true ]]; then
-        build_args+=("--push")
-    else
-        # For multi-arch builds, --load doesn't work with multiple platforms
-        # We need to either push or use --output type=docker for single platform
-        if [[ "${#arch_array[@]}" -eq 1 ]]; then
-            build_args+=("--load")
-        else
-            log WARN "Multi-arch builds require --push to registry (cannot load locally)"
-            log WARN "Skipping local load for multi-arch build: $primary_tag"
-        fi
-    fi
+	if [[ "$PUSH_IMAGES" == true ]]; then
+		build_args+=("--push")
+	else
+		# For multi-arch builds, --load doesn't work with multiple platforms
+		# We need to either push or use --output type=docker for single platform
+		if [[ "${#arch_array[@]}" -eq 1 ]]; then
+			build_args+=("--load")
+		else
+			log WARN "Multi-arch builds require --push to registry (cannot load locally)"
+			log WARN "Skipping local load for multi-arch build: $primary_tag"
+		fi
+	fi
 
-    # Add build context (version-specific directory)
-    build_args+=("$build_dir")
+	# Add build context (version-specific directory)
+	build_args+=("$build_dir")
 
-    # Show all tags that will be built
-    local all_tags="$primary_tag"
-    if [[ -n "$additional_tags" ]]; then
-        IFS=',' read -ra tags_array <<< "$additional_tags"
-        for tag in "${tags_array[@]}"; do
-            tag=$(echo "$tag" | xargs)
-            if [[ -n "$tag" ]]; then
-                if [[ -n "$DEFAULT_REGISTRY" ]]; then
-                    all_tags="$all_tags, ${DEFAULT_REGISTRY}:${tag}"
-                else
-                    all_tags="$all_tags, $tag"
-                fi
-            fi
-        done
-    fi
+	# Show all tags that will be built
+	local all_tags="$primary_tag"
+	if [[ -n "$additional_tags" ]]; then
+		IFS=',' read -ra tags_array <<<"$additional_tags"
+		for tag in "${tags_array[@]}"; do
+			tag=$(echo "$tag" | xargs)
+			if [[ -n "$tag" ]]; then
+				if [[ -n "$DEFAULT_REGISTRY" ]]; then
+					all_tags="$all_tags, ${DEFAULT_REGISTRY}:${tag}"
+				else
+					all_tags="$all_tags, $tag"
+				fi
+			fi
+		done
+	fi
 
-    log INFO "Building multi-arch image with tags: $all_tags ($platforms)"
-    log DEBUG "Docker build command: docker buildx build ${build_args[*]}"
+	log INFO "Building multi-arch image with tags: $all_tags ($platforms)"
+	log DEBUG "Docker build command: docker buildx build ${build_args[*]}"
 
-    # Execute build
-    if ! docker buildx build "${build_args[@]}"; then
-        log ERROR "Failed to build image: $primary_tag"
-        return 1
-    fi
+	# Execute build
+	if ! docker buildx build "${build_args[@]}"; then
+		log ERROR "Failed to build image: $primary_tag"
+		return 1
+	fi
 
-    log SUCCESS "Built multi-arch image with tags: $all_tags ($platforms)"
+	log SUCCESS "Built multi-arch image with tags: $all_tags ($platforms)"
 
-    if [[ "$PUSH_IMAGES" == true ]]; then
-        log SUCCESS "Pushed multi-arch image with tags: $all_tags"
-    fi
+	if [[ "$PUSH_IMAGES" == true ]]; then
+		log SUCCESS "Pushed multi-arch image with tags: $all_tags"
+	fi
 
-    return 0
+	return 0
 }
 
 # Function to setup buildx builder
 setup_buildx() {
-    log INFO "Setting up Docker buildx builder..."
+	log INFO "Setting up Docker buildx builder..."
 
-    # Check if buildx builder exists
-    if ! docker buildx ls | grep -q "asterisk-builder"; then
-        log INFO "Creating buildx builder: asterisk-builder"
-        if ! docker buildx create --name asterisk-builder --use; then
-            log ERROR "Failed to create buildx builder"
-            return 1
-        fi
-    else
-        log DEBUG "Using existing buildx builder: asterisk-builder"
-        docker buildx use asterisk-builder
-    fi
+	# Check if buildx builder exists
+	if ! docker buildx ls | grep -q "asterisk-builder"; then
+		log INFO "Creating buildx builder: asterisk-builder"
+		if ! docker buildx create --name asterisk-builder --use; then
+			log ERROR "Failed to create buildx builder"
+			return 1
+		fi
+	else
+		log DEBUG "Using existing buildx builder: asterisk-builder"
+		docker buildx use asterisk-builder
+	fi
 
-    # Bootstrap the builder
-    if ! docker buildx inspect --bootstrap >/dev/null 2>&1; then
-        log ERROR "Failed to bootstrap buildx builder"
-        return 1
-    fi
+	# Bootstrap the builder
+	if ! docker buildx inspect --bootstrap >/dev/null 2>&1; then
+		log ERROR "Failed to bootstrap buildx builder"
+		return 1
+	fi
 
-    log SUCCESS "Buildx builder ready"
-    return 0
+	log SUCCESS "Buildx builder ready"
+	return 0
 }
 
 # Build processing
@@ -996,7 +996,7 @@ log INFO "Build matrix resolution complete - proceeding with config generation..
 
 # Setup buildx
 if ! setup_buildx; then
-    exit 1
+	exit 1
 fi
 
 # Track build results
@@ -1005,50 +1005,50 @@ FAILED_BUILDS=()
 
 # Process each build target
 for target in "${BUILD_TARGETS[@]}"; do
-    IFS=':' read -r os distribution architectures template source additional_tags <<< "$target"
+	IFS=':' read -r os distribution architectures template source additional_tags <<<"$target"
 
-    log INFO ""
-    log INFO "=========================================="
-    if [[ -n "$additional_tags" ]]; then
-        log INFO "Processing: $VERSION ($os/$distribution [$architectures]) +tags: $additional_tags"
-    else
-        log INFO "Processing: $VERSION ($os/$distribution [$architectures])"
-    fi
-    log INFO "=========================================="
+	log INFO ""
+	log INFO "=========================================="
+	if [[ -n "$additional_tags" ]]; then
+		log INFO "Processing: $VERSION ($os/$distribution [$architectures]) +tags: $additional_tags"
+	else
+		log INFO "Processing: $VERSION ($os/$distribution [$architectures])"
+	fi
+	log INFO "=========================================="
 
-    # Generate/find config (config is per distribution, not per architecture)
-    config_file=$(ensure_config "$VERSION" "$os" "$distribution" "$template")
-    if [[ $? -ne 0 ]]; then
-        log ERROR "Failed to ensure config for $target"
-        FAILED_BUILDS+=("$target:config_generation")
-        continue
-    fi
+	# Generate/find config (config is per distribution, not per architecture)
+	config_file=$(ensure_config "$VERSION" "$os" "$distribution" "$template")
+	if [[ $? -ne 0 ]]; then
+		log ERROR "Failed to ensure config for $target"
+		FAILED_BUILDS+=("$target:config_generation")
+		continue
+	fi
 
-    # Generate Dockerfile and healthcheck.sh (per distribution)
-    build_dir=$(generate_dockerfile "$config_file" "$VERSION" "$os" "$distribution")
-    if [[ $? -ne 0 ]]; then
-        log ERROR "Failed to generate Dockerfile for $target"
-        FAILED_BUILDS+=("$target:dockerfile_generation")
-        continue
-    fi
+	# Generate Dockerfile and healthcheck.sh (per distribution)
+	build_dir=$(generate_dockerfile "$config_file" "$VERSION" "$os" "$distribution")
+	if [[ $? -ne 0 ]]; then
+		log ERROR "Failed to generate Dockerfile for $target"
+		FAILED_BUILDS+=("$target:dockerfile_generation")
+		continue
+	fi
 
-    # Skip Docker build in dry-run mode (but files are already generated)
-    if [[ "$DRY_RUN" == true ]]; then
-        log INFO "DRY RUN - Skipping Docker build for $target (files generated in $build_dir)"
-        SUCCESSFUL_BUILDS+=("$target")
-        continue
-    fi
+	# Skip Docker build in dry-run mode (but files are already generated)
+	if [[ "$DRY_RUN" == true ]]; then
+		log INFO "DRY RUN - Skipping Docker build for $target (files generated in $build_dir)"
+		SUCCESSFUL_BUILDS+=("$target")
+		continue
+	fi
 
-    # Build multi-arch image
-    if build_image "$build_dir" "$VERSION" "$os" "$distribution" "$architectures" "$additional_tags"; then
-        SUCCESSFUL_BUILDS+=("$target")
-        log SUCCESS "Build completed: $target"
-    else
-        FAILED_BUILDS+=("$target:build_failed")
-        log ERROR "Build failed: $target"
-    fi
+	# Build multi-arch image
+	if build_image "$build_dir" "$VERSION" "$os" "$distribution" "$architectures" "$additional_tags"; then
+		SUCCESSFUL_BUILDS+=("$target")
+		log SUCCESS "Build completed: $target"
+	else
+		FAILED_BUILDS+=("$target:build_failed")
+		log ERROR "Build failed: $target"
+	fi
 
-    # Files remain in asterisk/${version}-${distribution}/ directory for reuse
+	# Files remain in asterisk/${version}-${distribution}/ directory for reuse
 done
 
 # Build summary
@@ -1061,31 +1061,31 @@ log SUCCESS "Successful builds: ${#SUCCESSFUL_BUILDS[@]}"
 log ERROR "Failed builds: ${#FAILED_BUILDS[@]}"
 
 if [[ ${#SUCCESSFUL_BUILDS[@]} -gt 0 ]]; then
-    log INFO ""
-    log INFO "Successful builds:"
-    for build in "${SUCCESSFUL_BUILDS[@]}"; do
-        IFS=':' read -r os distribution architectures template source additional_tags <<< "$build"
-        if [[ -n "$additional_tags" ]]; then
-            log SUCCESS "  ✓ $VERSION ($os/$distribution [$architectures]) +tags: $additional_tags"
-        else
-            log SUCCESS "  ✓ $VERSION ($os/$distribution [$architectures])"
-        fi
-    done
+	log INFO ""
+	log INFO "Successful builds:"
+	for build in "${SUCCESSFUL_BUILDS[@]}"; do
+		IFS=':' read -r os distribution architectures template source additional_tags <<<"$build"
+		if [[ -n "$additional_tags" ]]; then
+			log SUCCESS "  ✓ $VERSION ($os/$distribution [$architectures]) +tags: $additional_tags"
+		else
+			log SUCCESS "  ✓ $VERSION ($os/$distribution [$architectures])"
+		fi
+	done
 fi
 
 if [[ ${#FAILED_BUILDS[@]} -gt 0 ]]; then
-    log INFO ""
-    log ERROR "Failed builds:"
-    for build in "${FAILED_BUILDS[@]}"; do
-        IFS=':' read -r os distribution architectures template source additional_tags reason <<< "$build"
-        log ERROR "  ✗ $VERSION ($os/$distribution [$architectures]) - $reason"
-    done
+	log INFO ""
+	log ERROR "Failed builds:"
+	for build in "${FAILED_BUILDS[@]}"; do
+		IFS=':' read -r os distribution architectures template source additional_tags reason <<<"$build"
+		log ERROR "  ✗ $VERSION ($os/$distribution [$architectures]) - $reason"
+	done
 fi
 
 # Exit with appropriate code
 if [[ ${#FAILED_BUILDS[@]} -gt 0 ]]; then
-    exit 1
+	exit 1
 else
-    log SUCCESS "All builds completed successfully!"
-    exit 0
+	log SUCCESS "All builds completed successfully!"
+	exit 0
 fi

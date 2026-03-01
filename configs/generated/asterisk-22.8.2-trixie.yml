@@ -16,11 +16,13 @@ asterisk:
     - app_record
     - app_echo
     - app_mixmonitor
+    - app_audiosocket
     channels:
     - chan_pjsip
     - chan_iax2
     - chan_local
     - chan_bridge_media
+    - chan_audiosocket
     drivers:
     - res_musiconhold
     - res_pjsip
